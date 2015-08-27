@@ -57,7 +57,12 @@ static void on_write(ble_lbs_t * p_lbs, ble_evt_t * p_ble_evt)
 				p_lbs->apdu_write_handler(p_lbs, p_evt_write->data);
 		}
 }
-
+extern uint8_t *s_apdu;
+static void on_indicate(ble_lbs_t * p_lbs, ble_evt_t * p_ble_evt)
+{
+//		ble_lbs_apdu_button_change(p_lbs, s_apdu);
+		p_lbs->led_write_handler(p_lbs, 0x01);
+}
 
 void ble_lbs_on_ble_evt(ble_lbs_t * p_lbs, ble_evt_t * p_ble_evt)
 {
@@ -74,6 +79,10 @@ void ble_lbs_on_ble_evt(ble_lbs_t * p_lbs, ble_evt_t * p_ble_evt)
         case BLE_GATTS_EVT_WRITE:
             on_write(p_lbs, p_ble_evt);
             break;
+				
+				case BLE_GATTS_EVT_HVC:
+						on_indicate(p_lbs, p_ble_evt);
+						break;
             
         default:
             // No implementation needed.
@@ -146,7 +155,8 @@ static uint32_t apdu_char_add(ble_lbs_t * p_lbs, const ble_lbs_init_t * p_lbs_in
 	
 		char_md.char_props.read		= 1;
 		char_md.char_props.write	= 1;
-		char_md.char_props.notify	= 1;
+//		char_md.char_props.notify	= 1;
+		char_md.char_props.indicate = 1;
 		char_md.p_char_user_desc	= NULL;
 		char_md.p_char_pf					= NULL;
 		char_md.p_user_desc_md		= NULL;
@@ -350,21 +360,30 @@ uint32_t ble_lbs_apdu_button_change(ble_lbs_t * p_lbs, uint8_t * apdu)
 		
 		return sd_ble_gatts_hvx(p_lbs->conn_handle, &params);
 	*/
-		uint16_t len = 40;
+//		static int index = 0;
+//		if (index == 40)
+//		{
+//				return 0;
+//		}
+		uint16_t len = 20;
 		ble_gatts_hvx_params_t params;
 		uint8_t * data;
 		data = (uint8_t *)malloc(len * sizeof(uint8_t));
 		memset(data, 0, sizeof(len * sizeof(uint8_t)));
 		for(int i = 0; i < len; i++)
 		{
-				data[i] = apdu[i];
+				//data[i] = apdu[i];
+			data[i] = i;
 		}
+//		index += len;
 		
 		memset(&params, 0, sizeof(params));
-		params.type = BLE_GATT_HVX_NOTIFICATION;
+//		params.type = BLE_GATT_HVX_NOTIFICATION;
+		params.type = BLE_GATT_HVX_INDICATION;
 		params.handle = p_lbs->apdu_char_handles.value_handle;
 		params.p_data = data;
 		params.p_len = &len;
+		//p_lbs->led_write_handler(p_lbs, 0x01);
 		
 		return sd_ble_gatts_hvx(p_lbs->conn_handle, &params);
 }

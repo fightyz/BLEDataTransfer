@@ -514,13 +514,16 @@ static void button_event_handler(uint8_t pin_no)
             break;
 						
 				case APDU_BUTTON_PIN_NO:
+						//nrf_gpio_pin_set(LEDBUTTON_LED_PIN_NO);
 						err_code = ble_lbs_apdu_button_change(&m_lbs, s_apdu);
             if (err_code != NRF_SUCCESS &&
                 err_code != BLE_ERROR_INVALID_CONN_HANDLE &&
                 err_code != NRF_ERROR_INVALID_STATE)
             {
+								
                 APP_ERROR_CHECK(err_code);
             }
+						//nrf_gpio_pin_set(LEDBUTTON_LED_PIN_NO);
             send_push = !send_push;
 						break;
 
