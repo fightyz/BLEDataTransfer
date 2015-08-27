@@ -39,7 +39,7 @@
 
 #define LEDBUTTON_LED_PIN_NO            LED_0
 #define LEDBUTTON_BUTTON_PIN_NO         BUTTON_1
-#define ECHO_BUTTON_PIN_NO							BUTTON_0
+#define APDU_BUTTON_PIN_NO							BUTTON_0
 
 #define DEVICE_NAME                     "LedButtonDemo"                           /**< Name of device. Will be included in the advertising data. */
 
@@ -219,6 +219,27 @@ static void led_write_handler(ble_lbs_t * p_lbs, uint8_t led_state)
     }
 }
 
+uint8_t *s_apdu;
+static uint8_t *p;
+
+static void apdu_write_handler(ble_lbs_t * p_lbs, uint8_t * apdu)
+{
+	/*
+		int len = *apdu;
+		apdu++;
+		for (int i = 0; i < len; i++)
+		{
+				s_apdu[i] = *apdu;
+				apdu++;
+		}
+	*/
+		for (int i = 0; i < 20; i++)
+		{
+				*p = apdu[i];
+				p++;
+		}
+}
+
 /**@brief Function for initializing services that will be used by the application.
  */
 static void services_init(void)
@@ -227,6 +248,7 @@ static void services_init(void)
     ble_lbs_init_t init;
     
     init.led_write_handler = led_write_handler;
+		init.apdu_write_handler = apdu_write_handler;
     
     err_code = ble_lbs_init(&m_lbs, &init);
     APP_ERROR_CHECK(err_code);
@@ -490,6 +512,17 @@ static void button_event_handler(uint8_t pin_no)
             }
             send_push = !send_push;
             break;
+						
+				case APDU_BUTTON_PIN_NO:
+						err_code = ble_lbs_apdu_button_change(&m_lbs, s_apdu);
+            if (err_code != NRF_SUCCESS &&
+                err_code != BLE_ERROR_INVALID_CONN_HANDLE &&
+                err_code != NRF_ERROR_INVALID_STATE)
+            {
+                APP_ERROR_CHECK(err_code);
+            }
+            send_push = !send_push;
+						break;
 
         default:
             APP_ERROR_HANDLER(pin_no);
@@ -514,7 +547,8 @@ static void buttons_init(void)
     static app_button_cfg_t buttons[] =
     {
         {WAKEUP_BUTTON_PIN, false, BUTTON_PULL, NULL},
-        {LEDBUTTON_BUTTON_PIN_NO, false, BUTTON_PULL, button_event_handler}
+        {LEDBUTTON_BUTTON_PIN_NO, false, BUTTON_PULL, button_event_handler},
+				{APDU_BUTTON_PIN_NO, false, BUTTON_PULL, button_event_handler}
     };
 
     APP_BUTTON_INIT(buttons, sizeof(buttons) / sizeof(buttons[0]), BUTTON_DETECTION_DELAY, true);
@@ -535,6 +569,9 @@ static void power_manage(void)
 int main(void)
 {
     // Initialize
+		s_apdu = (uint8_t *) malloc (300 * sizeof(uint8_t));
+		p = s_apdu;
+		memset(s_apdu, 0, 300 * sizeof(uint8_t));
     leds_init();
     timers_init();
     gpiote_init();

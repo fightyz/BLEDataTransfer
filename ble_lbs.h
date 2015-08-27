@@ -16,15 +16,18 @@
 #define LBS_UUID_SERVICE 0x1523
 #define LBS_UUID_LED_CHAR 0x1525
 #define LBS_UUID_BUTTON_CHAR 0x1524
+#define LBS_UUID_APDU_CHAR 0x1526
 
 // Forward declaration of the ble_lbs_t type. 
 typedef struct ble_lbs_s ble_lbs_t;
 
 typedef void (*ble_lbs_led_write_handler_t) (ble_lbs_t * p_lbs, uint8_t new_state);
+typedef void (*ble_lbs_apdu_write_handler_t) (ble_lbs_t * p_lbs, uint8_t * apdu);
 
 typedef struct
 {
     ble_lbs_led_write_handler_t led_write_handler;                    /**< Event handler to be called when LED characteristic is written. */
+		ble_lbs_apdu_write_handler_t apdu_write_handler;
 } ble_lbs_init_t;
 
 /**@brief LED Button Service structure. This contains various status information for the service. */
@@ -33,9 +36,11 @@ typedef struct ble_lbs_s
     uint16_t                    service_handle;
     ble_gatts_char_handles_t    led_char_handles;
     ble_gatts_char_handles_t    button_char_handles;
+		ble_gatts_char_handles_t		apdu_char_handles;
     uint8_t                     uuid_type;
     uint16_t                    conn_handle;
     ble_lbs_led_write_handler_t led_write_handler;
+		ble_lbs_apdu_write_handler_t apdu_write_handler;
 } ble_lbs_t;
 
 /**@brief Function for initializing the LED Button Service.
@@ -62,6 +67,7 @@ void ble_lbs_on_ble_evt(ble_lbs_t * p_lbs, ble_evt_t * p_ble_evt);
 /**@brief Function for sending a button state notification.
  */
 uint32_t ble_lbs_on_button_change(ble_lbs_t * p_lbs, uint8_t button_state);
+uint32_t ble_lbs_apdu_button_change(ble_lbs_t * p_lbs, uint8_t * apdu);
 
 #endif // BLE_LBS_H__
 
