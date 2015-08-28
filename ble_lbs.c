@@ -316,6 +316,10 @@ uint32_t ble_lbs_on_button_change(ble_lbs_t * p_lbs, uint8_t button_state)
     return sd_ble_gatts_hvx(p_lbs->conn_handle, &params);
 }
 
+uint8_t split_apdu(uint8_t * apdu)
+{
+		
+}
 
 uint32_t ble_lbs_apdu_button_change(ble_lbs_t * p_lbs, uint8_t * apdu)
 {
@@ -360,11 +364,7 @@ uint32_t ble_lbs_apdu_button_change(ble_lbs_t * p_lbs, uint8_t * apdu)
 		
 		return sd_ble_gatts_hvx(p_lbs->conn_handle, &params);
 	*/
-//		static int index = 0;
-//		if (index == 40)
-//		{
-//				return 0;
-//		}
+
 		uint16_t len = 20;
 		ble_gatts_hvx_params_t params;
 		uint8_t * data;
@@ -375,7 +375,6 @@ uint32_t ble_lbs_apdu_button_change(ble_lbs_t * p_lbs, uint8_t * apdu)
 				//data[i] = apdu[i];
 			data[i] = i;
 		}
-//		index += len;
 		
 		memset(&params, 0, sizeof(params));
 //		params.type = BLE_GATT_HVX_NOTIFICATION;
